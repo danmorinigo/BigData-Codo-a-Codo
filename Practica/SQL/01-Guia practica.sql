@@ -459,3 +459,109 @@ SELECT l.Language as Lengua, COUNT(p.Name) as Paises
     WHERE l.IsOfficial LIKE 'T'
     GROUP BY l.Language
     ORDER BY Paises DESC;
+/*
+46. Mostrar listados los años de independencia (sin nulos) junto a la cantidad de
+países que la hayan conseguido en ese año. Se desea visualizar aquellos años
+donde más de un país se haya independizado. (Se esperan 2 columnas y 39
+registros).
+*/
+SELECT * FROM
+    (SELECT IndepYear AS 'Año_Independencia', COUNT(Name) as 'Cant_Paises'
+        FROM country
+        WHERE IndepYear IS NOT NULL
+        GROUP BY IndepYear
+        ORDER BY Cant_Paises) as TablaDerivada
+    WHERE TablaDerivada.Cant_Paises > 1;
+/*
+47.Listar los países junto a la cantidad de idiomas diferentes hablados, pero solo
+aquellos donde se hablen entre tres y cinco idiomas diferentes. (Se esperan 2
+columnas y 80 registros).
+*/
+SELECT p.Name, LP.Lenguas
+    FROM country p
+    INNER JOIN
+    (SELECT CountryCode AS Codigo_Pais, COUNT(Language) AS Lenguas
+        FROM countrylanguage
+        GROUP BY CountryCode) AS LP
+    ON LP.Codigo_Pais = p.Code
+    WHERE Lenguas BETWEEN 3 AND 5
+    ORDER BY p.name;
+/*
+48.Mostrar los distritos, junto al nombre del país al que pertenecen, cuya población
+total (también listada) no supere los diez mil habitantes. (Se esperan 3 columnas
+y 35 registros).
+*/
+SELECT dp.Distrito, p.Name AS Pais, dp.Poblacion
+    FROM (SELECT District AS Distrito, SUM(Population) as Poblacion
+        FROM city
+        GROUP BY Distrito) AS dp
+    INNER JOIN (SELECT DISTINCT District AS Distrito, CountryCode as Codigo_Pais
+                FROM city) AS dcp
+    ON dp.Distrito = dcp.Distrito
+        INNER JOIN country p
+        ON dcp.Codigo_Pais = p.Code
+    WHERE dp.Poblacion <= 10000
+    ORDER BY dp.Distrito;
+SELECT District AS Distrito, COUNT(CountryCode) as Codigo_Pais, COUNT(DISTINCT CountryCode) as Pais
+    FROM city
+    GROUP BY Distrito
+    ORDER BY Pais DESC;
+
+#----- el OK!! ------
+SELECT dpp.Distrito AS Distrito, p.name AS Pais, dpp.Poblacion AS Poblacion
+    FROM 
+    (SELECT District AS Distrito, CountryCode AS Cod_pais, SUM(Population) as Poblacion
+    FROM city
+    GROUP BY District, CountryCode) AS dpp
+    INNER JOIN country as p
+    ON dpp.Cod_pais = p.Code
+    WHERE Poblacion < 10000
+    ORDER BY dpp.Distrito, Poblacion DESC;
+#----- el OK!! ------
+
+
+SELECT CountryCode, District
+    FROM city
+    GROUP BY CountryCode;
+
+SELECT CountryCode, COUNT(District)
+    FROM city
+    GROUP BY CountryCode;
+
+
+SELECT Name as Ciudad, District AS Distrito, CountryCode as Codigo_Pais, Population as Poblacion
+    FROM city
+    WHERE District LIKE 'England'
+    ORDER BY Codigo_Pais DESC;
+SELECT District AS Distrito, SUM(Population) as Poblacion
+    FROM city
+    WHERE District LIKE 'England'
+    GROUP BY Distrito;
+
+   #Me dan 26 registros
+/*
+49.Mostrar las regiones junto a su densidad poblacional promedio, donde ésta
+supere a la mitad de la densidad poblacional máxima. (Se esperan 2 columnas y 3
+registros).
+*/
+SELECT r.Region, r.DensPoblacionPromedio
+    FROM
+    (SELECT Region as Region,
+        SUM(Population/SurfaceArea) AS DensPoblacion,
+        AVG(Population/SurfaceArea) AS DensPoblacionPromedio,
+        (MAX(Population/SurfaceArea) / 2.0) AS MitadDensMaximaPoblacion
+        FROM country
+        GROUP BY Region) AS r
+    WHERE r.DensPoblacionPromedio > r.MitadDensMaximaPoblacion;
+/*
+50.Mostrar los lenguajes oficiales junto a su porcentaje promedio de habla, cuyo
+promedio no supere un dígito entero. (Se esperan 2 columnas y 7 registros).
+*/
+SELECT t.l AS Lengua, t.p AS PorcentajePromedio
+    FROM
+        (SELECT Language as l, AVG(percentage) as p
+            FROM countrylanguage
+            WHERE IsOfficial LIKE 'T'
+            GROUP BY Language) AS t
+    WHERE t.p < 10
+    ORDER BY t.p DESC;
