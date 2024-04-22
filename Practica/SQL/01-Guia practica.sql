@@ -349,10 +349,21 @@ SELECT c.name as Ciudad, p.name as País, l.Language as 'Idioma', l.IsOfficial a
     ON p.capital = c.ID
         INNER JOIN countrylanguage l
         on p.Code = l.CountryCode
-            WHERE l.IsOfficial LIKE "T"
-                AND l.Language NOT IN ('Spanish', 'English', 'Portuguese', 'Italian', 'French', 'German')
+            #WHERE l.IsOfficial LIKE "T"
+                #AND l.Language NOT IN ('Spanish', 'English', 'Portuguese', 'Italian', 'French', 'German')
     ORDER BY c.name;
     # NO ME DA LA CANTIDAD DE REGISTROS QUE DICE EN EL ENUNCIADO..
+#POSIBLE SOLUCION
+SELECT c.name AS Ciudad, p.name AS Pais, l.Language AS Lengua, l.IsOfficial AS Oficial 
+    FROM city c
+    INNER JOIN country p
+    ON c.CountryCode = p.Code
+        INNER JOIN countrylanguage l
+            ON p.Code = l.CountryCode
+    WHERE l.IsOfficial LIKE 'T'
+        AND l.Language NOT IN ('Spanish', 'English', 'Portuguese', 'Italian', 'French', 'German')
+    ORDER BY Ciudad;
+
 /*
 35.Listar nombre, población y país de las diez ciudades europeas de habla inglesa
 más pobladas. (Se esperan 3 columnas y 10 registros).
@@ -372,7 +383,12 @@ SELECT c.name as 'Ciudad', c.Population as 'Poblacion_Ciudad', p.name as 'País'
 máxima, la población mínima, el promedio de población y con cuántos registros
 de población se cuenta. (Se esperan 5 columnas y 1 registro).
 */
-SELECT SUM(Population), MAX(Population), MIN(Population), AVG(Population), COUNT(*)
+SELECT SUM(Population) AS TotalPoblacion,
+    MAX(Population) AS PaisConMasPoblacion, 
+    MIN(Population) AS PaisConMenosPoblacion,
+    AVG(Population) AS PoblacionPromedio,
+    COUNT(*) AS TotalPaises, 
+    COUNT(Population) AS ConDatosDePoblacion
     FROM country;
 /*
 37.Mostrar según la tabla de países, la cantidad total de población, la población
@@ -404,7 +420,7 @@ SELECT c.CountryCode as 'Codigo_Pais', SUM(Population) as Poblacion, COUNT(*) as
 lenguajes junto al porcentaje de habla mínimo registrado para cada uno. (Se
 esperan 2 columnas y 457 registros).
 */
-SELECT Language as Lenguaje, MIN(percentage) as MinimoPOrcentaje
+SELECT Language as Lenguaje, MIN(percentage) as MinimoPorcentaje
     FROM countrylanguage
     GROUP BY Language;
 /*
@@ -472,6 +488,13 @@ SELECT * FROM
         GROUP BY IndepYear
         ORDER BY Cant_Paises) as TablaDerivada
     WHERE TablaDerivada.Cant_Paises > 1;
+#CON HAVIN....
+SELECT IndepYear AS 'Año_Independencia', COUNT(Name) as 'Cant_Paises'
+    FROM country
+    WHERE IndepYear IS NOT NULL
+    GROUP BY IndepYear
+    HAVING Cant_Paises > 1
+    ORDER BY Cant_Paises DESC;
 /*
 47.Listar los países junto a la cantidad de idiomas diferentes hablados, pero solo
 aquellos donde se hablen entre tres y cinco idiomas diferentes. (Se esperan 2
@@ -486,6 +509,13 @@ SELECT p.Name, LP.Lenguas
     ON LP.Codigo_Pais = p.Code
     WHERE Lenguas BETWEEN 3 AND 5
     ORDER BY p.name;
+#CON HAVING
+SELECT p.Code AS Codigo, p.name AS Pais, COUNT(DISTINCT l.Language) AS Idiomas
+    FROM countrylanguage l
+    INNER JOIN country p
+    ON l.CountryCode = p.Code
+    GROUP BY Codigo
+    HAVING Idiomas BETWEEN 3 AND 5;
 /*
 48.Mostrar los distritos, junto al nombre del país al que pertenecen, cuya población
 total (también listada) no supere los diez mil habitantes. (Se esperan 3 columnas
@@ -518,7 +548,15 @@ SELECT dpp.Distrito AS Distrito, p.name AS Pais, dpp.Poblacion AS Poblacion
     WHERE Poblacion < 10000
     ORDER BY dpp.Distrito, Poblacion DESC;
 #----- el OK!! ------
-
+#CON HAVING
+SELECT c.District AS Distrito, p.name AS Pais, SUM(c.Population) AS Poblacion
+    FROM city c
+    INNER JOIN country p
+    ON c.CountryCode = p.Code
+    GROUP BY c.District, c.CountryCode
+    HAVING Poblacion < 10000
+    ORDER BY c.District;
+#---------------------------------------
 
 SELECT CountryCode, District
     FROM city
@@ -553,6 +591,15 @@ SELECT r.Region, r.DensPoblacionPromedio
         FROM country
         GROUP BY Region) AS r
     WHERE r.DensPoblacionPromedio > r.MitadDensMaximaPoblacion;
+#CON HAVING
+SELECT Region as Region,
+    SUM(Population/SurfaceArea) AS DensPoblacion,
+    AVG(Population/SurfaceArea) AS DensPoblacionPromedio,
+    (MAX(Population/SurfaceArea) / 2.0) AS MitadDensMaximaPoblacion
+    FROM country
+    GROUP BY Region
+    HAVING DensPoblacionPromedio > MitadDensMaximaPoblacion;
+
 /*
 50.Mostrar los lenguajes oficiales junto a su porcentaje promedio de habla, cuyo
 promedio no supere un dígito entero. (Se esperan 2 columnas y 7 registros).
@@ -565,3 +612,10 @@ SELECT t.l AS Lengua, t.p AS PorcentajePromedio
             GROUP BY Language) AS t
     WHERE t.p < 10
     ORDER BY t.p DESC;
+# CON HAVING
+SELECT Language as Lengua, AVG(percentage) as Porcentaje
+    FROM countrylanguage
+    WHERE IsOfficial LIKE 'T'
+    GROUP BY Language
+    HAVING Porcentaje < 10
+    ORDER BY Porcentaje DESC;
