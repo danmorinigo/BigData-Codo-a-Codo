@@ -619,3 +619,43 @@ SELECT Language as Lengua, AVG(percentage) as Porcentaje
     GROUP BY Language
     HAVING Porcentaje < 10
     ORDER BY Porcentaje DESC;
+
+#USAMOS BASE DE DATOS INUPDE
+#51
+INSERT INTO clientes (dni, nombre, apellido, genero, fecha_nacimiento, mail, movil, domicilio, barrio, nacionalidad)
+    VALUES ('12169851', 'Luis Enrique', 'Pérez', 'HOMBRE', '1954-06-01', 'perez_luisenrique@ma1l.com', '1157319468', 'Pujol 416', 'Caballito', 'Uruguay');
+SELECT COUNT(*) FROM clientes;
+SELECT id_cliente, dni, nombre, apellido FROM clientes
+    WHERE id_cliente > 19075
+    ORDER BY id_cliente;
+
+#52
+INSERT INTO clientes (dni, nombre, apellido, genero, fecha_nacimiento, mail, movil, domicilio, barrio, nacionalidad)
+    VALUES
+        ('17278290', 'Florencia', 'Santos', 'MUJER', '1963-07-12', 'flor.santos@ma1l.com', '1148434346', 'Piran 3015', 'Villa Urquiza', 'Argentina'),
+        ('16838283', 'Luisa Nina', 'Escudero', 'MUJER', '1962-03-22', 'lulu62@hushma1l', '1175940343', 'Superi 348 1º A', 'Colegiales', 'Colombia'),
+        ('19164274', 'Carlos Alberto', 'Medina', 'HOMBRE', '1966-04-26', 'medinacarlosalberto@z0h0.com', '1123423451', 'Mexico 2121', 'Balvanera', 'Argentina');
+INSERT INTO clientes (nombre, apellido, dni, nacionalidad, fecha_nacimiento, domicilio, barrio, movil, mail)
+    VALUES ('Maria Sol', 'Gonzáles', '36427254', 'Argentina', '1992-08-15', 'Gurruchaga 243', 'Villa Crespo', '1136782013', 'ma.gon54@gma1l.com');
+
+#54
+SELECT id_cliente, nombre, apellido FROM clientes
+    WHERE id_cliente = 85;
+UPDATE clientes
+    SET apellido = 'Chaves'
+    WHERE id_cliente = 85;
+#55
+SELECT id_cliente, dni FROM clientes
+    #WHERE dni LIKE '_______'
+    WHERE CHAR_LENGTH(dni) < 8;
+SELECT id_cliente, dni FROM clientes
+    WHERE id_cliente = 3652;
+UPDATE clientes
+    SET dni = SUBSTRING(dni, 2)
+    #SET dni = CONCAT('0', dni)
+    WHERE id_cliente = 3652;
+UPDATE clientes
+    SET dni = CONCAT('0', dni)
+    WHERE CHAR_LENGTH(dni) = 7;
+SELECT dni FROM clientes
+    WHERE dni LIKE '0%';
