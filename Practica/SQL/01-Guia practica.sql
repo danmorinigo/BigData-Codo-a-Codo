@@ -659,3 +659,33 @@ UPDATE clientes
     WHERE CHAR_LENGTH(dni) = 7;
 SELECT dni FROM clientes
     WHERE dni LIKE '0%';
+#56
+SELECT id_cliente, nombre, LOCATE('á', nombre), REPLACE(nombre, 'á', 'a')
+    FROM clientes
+    WHERE 
+        nombre NOT LIKE '% %'
+        AND nombre LIKE '%nicolás%';
+UPDATE clientes
+    SET nombre = REPLACE(nombre, 'á', 'a')
+    WHERE
+        nombre NOT LIKE '% %'
+        AND nombre LIKE '%nicolás%';
+#57
+UPDATE clientes
+    SET apellido = UCASE(apellido)
+    WHERE nacionalidad NOT LIKE 'Argentina';
+#58
+DELETE FROM clientes
+    WHERE id_cliente = 9804;
+#59
+SELECT mail
+    FROM clientes
+    WHERE mail LIKE '%@z0h0%';
+DELETE FROM clientes
+    WHERE mail LIKE '%@z0h0%';
+#60
+SELECT barrio
+    FROM clientes
+    WHERE barrio LIKE '%flores%';
+DELETE FROM clientes
+    WHERE barrio LIKE '%flores%';
